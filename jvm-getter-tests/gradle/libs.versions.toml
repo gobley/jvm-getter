@@ -1,0 +1,25 @@
+[versions]
+agp = "8.6.1"
+android-compileSdk = "35"
+android-minSdk = "21"
+junit = "4.13.2"
+kotlin = "2.1.21"
+kotlinx-coroutines = "1.10.1"
+gobley = "0.2.0"
+androidx-test-core = "1.6.1"
+androidx-test-runner = "1.6.2"
+kotest = "5.9.1"
+
+[libraries]
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-test-core = { module = "androidx.test:core", version.ref = "androidx-test-core" }
+androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidx-test-runner" }
+kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+
+[plugins]
+android-library = { id = "com.android.library", version.ref = "agp" }
+gobley-cargo = { id = "dev.gobley.cargo", version.ref = "gobley" }
+gobley-uniffi = { id = "dev.gobley.uniffi", version.ref = "gobley" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-plugin-atomicfu = { id = "org.jetbrains.kotlin.plugin.atomicfu", version.ref = "kotlin" }
