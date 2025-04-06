@@ -1,0 +1,23 @@
+[package]
+name = "jvm-getter"
+description = "JNI_GetCreatedJavaVMs for Android API 30 or lower"
+homepage = "https://github.com/gobley/jvm-getter"
+repository = "https://github.com/gobley/jvm-getter"
+readme = "../README.md"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.73"
+authors = ["Chanjung Kim <chanjungkim@paxbun.dev>"]
+categories = ["no-std", "os::android-apis"]
+keywords = ["java", "jni", "android"]
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+goblin = { version = "0.9", default-features = false, features = [
+    "elf64",
+    "elf32",
+    "endian_fd",
+] }
+jni-sys = "0.3"
+libc = "0.2"
+libloading = "0.8"
