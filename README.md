@@ -3,7 +3,7 @@
 > ⚠️ This library depends on implementation details of Android, not its public APIs. Use at your own
 > risk.
 
-A tiny library for finding [`JNI_GetCreatedJavaVMs()`] on Android 24 to 30.
+A tiny `no_std` library for finding [`JNI_GetCreatedJavaVMs()`] on Android 24 to 30.
 
 [`JNI_GetCreatedJavaVMs()`] is a JNI function that returns the list of Java VM instances that have
 been created during runtime. Unfortunately, on Android API level 30 or lower,
@@ -22,7 +22,7 @@ to manually handle Java-specific logic for Android. To learn about the strategy 
 also available on Desktop platforms, including Windows, macOS, and Linux.
 
 [`JNI_GetCreatedJavaVMs()`]: https://docs.oracle.com/javase/8/docs/technotes/guides/jni/spec/invocation.html#JNI_GetCreatedJavaVMs
-[`find_jni_get_created_java_vms()`]: ./jvm-getter/src/lib.rs#L52
+[`find_jni_get_created_java_vms()`]: ./jvm-getter/src/lib.rs#L42-L60
 
 ## How to use
 

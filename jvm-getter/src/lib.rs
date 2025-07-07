@@ -3,7 +3,7 @@
 //! > ⚠️ This library depends on implementation details of Android, not its public APIs. Use at your
 //! > own risk.
 //!
-//! A tiny library for finding [`JNI_GetCreatedJavaVMs()`] on Android 24 to 30.
+//! A tiny `no_std` library for finding [`JNI_GetCreatedJavaVMs()`] on Android 24 to 30.
 //!
 //! [`JNI_GetCreatedJavaVMs()`] is a JNI function that returns the list of Java VM instances that
 //! have been created during runtime. Unfortunately, on Android API level 30 or lower,
@@ -61,9 +61,9 @@ pub type JNI_GetCreatedJavaVMs =
 pub unsafe fn find_jni_get_created_java_vms() -> Option<JNI_GetCreatedJavaVMs> {
     // For API level 31 or higher, or level 23 or lower, where JNI_GetCreatedJavaVMs is a public
     // API, we can just use `dlsym` to find the symbol.
-
     #[cfg(target_family = "unix")]
     let symbol = unix::find_jni_get_created_java_vms_from_current_process();
+
     #[cfg(target_os = "windows")]
     let symbol = windows::find_jni_get_created_java_vms_from_current_process();
 
