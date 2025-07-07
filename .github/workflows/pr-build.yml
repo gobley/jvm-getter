@@ -1,0 +1,103 @@
+name: Build jvm-getter
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Build jvm-getter
+    strategy:
+      matrix:
+        profile: [dev, release]
+        rust-version: ["1.73", "1.78", "1.83", "1.88"]
+        target:
+          # Android Targets
+          - aarch64-linux-android
+          - arm-linux-androideabi
+          - x86_64-linux-android
+          - i686-linux-android
+
+          # Windows Targets
+          - x86_64-pc-windows-msvc
+          - aarch64-pc-windows-msvc
+          - x86_64-pc-windows-gnu
+
+          # macOS Targets
+          - x86_64-apple-darwin
+          - aarch64-apple-darwin
+
+          # Linux Targets
+          - x86_64-unknown-linux-gnu
+          - aarch64-unknown-linux-gnu
+          - x86_64-unknown-linux-musl
+          - aarch64-unknown-linux-musl
+        include:
+          # Android Targets
+          - target: aarch64-linux-android
+            name: AArch64 Android
+            os: ubuntu-latest
+          - target: arm-linux-androideabi
+            name: ARMv7 Android
+            os: ubuntu-latest
+          - target: x86_64-linux-android
+            name: x86_64 Android
+            os: ubuntu-latest
+          - target: i686-linux-android
+            name: x86 Android
+            os: ubuntu-latest
+
+          # Windows Targets
+          - target: x86_64-pc-windows-msvc
+            name: x86_64 Windows (Visual C++)
+            os: windows-latest
+          - target: aarch64-pc-windows-msvc
+            name: AArch64 Windows (Visual C++)
+            os: windows-latest
+          - target: x86_64-pc-windows-gnu
+            name: x86_64 Windows (MinGW)
+            os: ubuntu-latest
+
+          # macOS Targets
+          - target: x86_64-apple-darwin
+            name: x86_64 macOS
+            os: macos-latest
+          - target: aarch64-apple-darwin
+            name: AArch64 macOS
+            os: macos-latest
+
+          # Linux Targets
+          - target: x86_64-unknown-linux-gnu
+            name: x86_64 Linux (glibc)
+            os: ubuntu-latest
+          - target: aarch64-unknown-linux-gnu
+            name: AArch64 Linux (glibc)
+            os: ubuntu-latest
+          - target: x86_64-unknown-linux-musl
+            name: x86_64 Linux (musl)
+            os: ubuntu-latest
+          - target: aarch64-unknown-linux-musl
+            name: AArch64 Linux (musl)
+            os: ubuntu-latest
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Set the default Rust version to ${{ matrix.rust-version }}
+        run: rustup default ${{ matrix.rust-version }}
+
+      - name: Setup cross-compilation for ${{ matrix.name }}
+        run: rustup target add ${{ matrix.target }}
+
+      - name: Install Cargo Clippy
+        run: rustup component add clippy
+
+      - name: Check out the main branch
+        uses: actions/checkout@v4
+
+      - name: Build jvm-getter for ${{ matrix.name }} with the ${{ matrix.profile }} profile
+        run: cargo build -p jvm-getter --target ${{ matrix.target }} --profile ${{ matrix.profile }}
+
+      - name: Run Cargo Clippy for ${{ matrix.name }} with the ${{ matrix.profile }} profile
+        run: cargo clippy -p jvm-getter --target ${{ matrix.target }} --profile ${{ matrix.profile }}

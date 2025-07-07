@@ -1,0 +1,35 @@
+name: Run tests on Desktop platforms
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-desktop:
+    name: Run tests on Desktop platforms
+    strategy:
+      matrix:
+        include:
+          - target: Windows
+            os: windows-latest
+          - target: macOS
+            os: macos-latest
+          - target: Linux
+            os: ubuntu-latest
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Check out the main branch
+        uses: actions/checkout@v4
+
+      - name: Run tests on ${{ matrix.target }}
+        run: ./gradlew allTests
+        working-directory: jvm-getter-tests
