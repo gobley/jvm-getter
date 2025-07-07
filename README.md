@@ -61,3 +61,9 @@ pub fn vm() -> &'static JavaVM {
     })
 }
 ```
+
+## Contribution
+
+If you find a device on which `jvm-getter` doesn’t run correctly, please report it. If you also
+succeed in getting `jvm-getter` to work on that device without breaking compatibility on other
+supported devices, you’re welcome to open a pull request.
