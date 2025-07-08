@@ -124,11 +124,25 @@ unsafe fn read_file(path: &[u8]) -> Option<Vec<u8>> {
         return None;
     }
 
-    let mut result = Vec::new();
-    let mut buffer = [0u8; 1024];
+    let mut stat = MaybeUninit::uninit();
 
+    if libc::fstat(file, stat.as_mut_ptr()) < 0 {
+        libc::close(file);
+        return None;
+    }
+    let stat = stat.assume_init();
+    let file_size = stat.st_size as usize;
+
+    let mut result = Vec::with_capacity(file_size);
+    let buffer = result.spare_capacity_mut();
+
+    let mut num_total_bytes_read = 0usize;
     loop {
-        let num_bytes_read = libc::read(file, buffer.as_mut_ptr() as _, buffer.len());
+        let num_bytes_read = libc::read(
+            file,
+            buffer[num_total_bytes_read..].as_mut_ptr() as _,
+            buffer.len() - num_total_bytes_read,
+        );
         if num_bytes_read < 0 {
             libc::close(file);
             return None;
@@ -136,8 +150,9 @@ unsafe fn read_file(path: &[u8]) -> Option<Vec<u8>> {
         if num_bytes_read == 0 {
             break;
         }
-        result.extend_from_slice(&buffer[..num_bytes_read as usize]);
+        num_total_bytes_read += num_bytes_read as usize;
     }
+    result.set_len(file_size);
 
     libc::close(file);
     Some(result)
