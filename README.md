@@ -62,6 +62,29 @@ pub fn vm() -> &'static JavaVM {
 }
 ```
 
+`jvm-getter` provides several Cargo features to control the behavior of
+`find_jni_get_created_java_vms`. Here's the list of the Cargo features:
+
+- `alloc`: Enables the use of `alloc::vec::Vec` (`std::vec::Vec`) for allocating a memory buffer for
+  `libart.so`.
+- `sym-search`: Enables finding `JNI_GetCreatedJavaVMs` using platform-specific symbol-searching APIs.
+  - `sym-search-unix`: Enables finding using `dlsym` on Unix systems.
+  - `sym-search-windows`: Enables finding using `GetProcAddress` on Windows.
+- `art-parsing`: Enables finding `JNI_GetCreatedJavaVMs` by directly parsing `libart.so`.
+
+All features are enabled by default. If you want to completely remove the dependency on the
+standard library, set `default-features` to `false` and enable `sym-search` and `art-parsing` only.
+
+If your app targets API level 31 (Android 12) or a higher version, you can also disable
+`art-parsing` as `JNI_GetCreatedJavaVMs` is a public API.
+
+```toml
+jvm-getter = { version = "0.1", default-features = false, features = [
+    "sym-search",
+    "art-parsing",
+] }
+```
+
 ## Contribution
 
 If you find a device on which `jvm-getter` doesn’t run correctly, please report it. If you also
