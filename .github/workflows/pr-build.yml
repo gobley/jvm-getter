@@ -98,6 +98,10 @@ jobs:
 
       - name: Build jvm-getter for ${{ matrix.name }} with the ${{ matrix.profile }} profile
         run: cargo build -p jvm-getter --target ${{ matrix.target }} --profile ${{ matrix.profile }}
+        env:
+          RUSTFLAGS: "-D warnings"
 
       - name: Run Cargo Clippy for ${{ matrix.name }} with the ${{ matrix.profile }} profile
         run: cargo clippy -p jvm-getter --target ${{ matrix.target }} --profile ${{ matrix.profile }}
+        env:
+          RUSTFLAGS: "-D warnings"

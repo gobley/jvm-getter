@@ -35,7 +35,7 @@ mod windows;
 use jni_sys::{jint, jsize, JavaVM};
 
 /// The function pointer type of `JNI_GetCreatedJavaVMs()`.
-#[allow(non_camel_case_types)]
+#[allow(non_camel_case_types, non_snake_case)]
 pub type JNI_GetCreatedJavaVMs =
     unsafe extern "system" fn(vmBuf: *mut *mut JavaVM, bufLen: jsize, nVMs: *mut jsize) -> jint;
 
