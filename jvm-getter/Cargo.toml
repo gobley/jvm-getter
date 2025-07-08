@@ -27,3 +27,7 @@ libc = { version = "0.2", default-features = false }
 windows-sys = { version = "0.60", default-features = false, features = [
     "Win32_System_LibraryLoader",
 ] }
+
+[features]
+default = ["alloc"]
+alloc = []
