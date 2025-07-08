@@ -93,7 +93,13 @@ unsafe extern "C" fn parse_and_find_jni_get_created_java_vms(
     let Some(library) = read_file(library_path) else {
         return 0;
     };
-    let Ok(library) = Elf::parse(&library) else {
+
+    #[cfg(feature = "alloc")]
+    let library = library.as_slice();
+    #[cfg(not(feature = "alloc"))]
+    let library = unsafe { library.as_slice() };
+
+    let Ok(library) = Elf::parse(library) else {
         return 0;
     };
 
@@ -118,17 +124,32 @@ unsafe extern "C" fn parse_and_find_jni_get_created_java_vms(
     1
 }
 
+#[cfg(feature = "alloc")]
 unsafe fn read_file(path: &[u8]) -> Option<Vec<u8>> {
     let file = libc::open(path.as_ptr() as _, O_RDONLY);
     if file <= 0 {
         return None;
     }
 
-    let mut result = Vec::new();
-    let mut buffer = [0u8; 1024];
+    let mut stat = MaybeUninit::uninit();
 
+    if libc::fstat(file, stat.as_mut_ptr()) < 0 {
+        libc::close(file);
+        return None;
+    }
+    let stat = stat.assume_init();
+    let file_size = stat.st_size as usize;
+
+    let mut result = Vec::with_capacity(file_size);
+    let buffer = result.spare_capacity_mut();
+
+    let mut num_total_bytes_read = 0usize;
     loop {
-        let num_bytes_read = libc::read(file, buffer.as_mut_ptr() as _, buffer.len());
+        let num_bytes_read = libc::read(
+            file,
+            buffer[num_total_bytes_read..].as_mut_ptr() as _,
+            buffer.len() - num_total_bytes_read,
+        );
         if num_bytes_read < 0 {
             libc::close(file);
             return None;
@@ -136,7 +157,81 @@ unsafe fn read_file(path: &[u8]) -> Option<Vec<u8>> {
         if num_bytes_read == 0 {
             break;
         }
-        result.extend_from_slice(&buffer[..num_bytes_read as usize]);
+        num_total_bytes_read += num_bytes_read as usize;
+    }
+    result.set_len(file_size);
+
+    libc::close(file);
+    Some(result)
+}
+
+#[cfg(not(feature = "alloc"))]
+struct RawVec {
+    buffer: core::ptr::NonNull<u8>,
+    len: usize,
+}
+
+#[cfg(not(feature = "alloc"))]
+impl RawVec {
+    pub fn new(len: usize) -> Option<RawVec> {
+        let buffer = core::ptr::NonNull::new(unsafe { libc::malloc(len) } as *mut _)?;
+        Some(RawVec { buffer, len })
+    }
+
+    pub fn as_uninit_slice(&mut self) -> &mut [MaybeUninit<u8>] {
+        unsafe { core::slice::from_raw_parts_mut(self.buffer.cast().as_ptr(), self.len) }
+    }
+
+    pub unsafe fn as_mut_slice(&mut self) -> &mut [u8] {
+        unsafe { core::slice::from_raw_parts_mut(self.buffer.as_ptr(), self.len) }
+    }
+
+    pub unsafe fn as_slice(&self) -> &[u8] {
+        unsafe { core::slice::from_raw_parts(self.buffer.as_ptr(), self.len) }
+    }
+}
+
+#[cfg(not(feature = "alloc"))]
+impl Drop for RawVec {
+    fn drop(&mut self) {
+        unsafe { libc::free(self.buffer.as_ptr() as *mut _) }
+    }
+}
+
+#[cfg(not(feature = "alloc"))]
+unsafe fn read_file(path: &[u8]) -> Option<RawVec> {
+    let file = libc::open(path.as_ptr() as _, O_RDONLY);
+    if file <= 0 {
+        return None;
+    }
+
+    let mut stat = MaybeUninit::uninit();
+
+    if libc::fstat(file, stat.as_mut_ptr()) < 0 {
+        libc::close(file);
+        return None;
+    }
+    let stat = stat.assume_init();
+    let file_size = stat.st_size as usize;
+
+    let mut result = RawVec::new(file_size)?;
+    let buffer = result.as_uninit_slice();
+
+    let mut num_total_bytes_read = 0usize;
+    loop {
+        let num_bytes_read = libc::read(
+            file,
+            buffer[num_total_bytes_read..].as_mut_ptr() as _,
+            buffer.len() - num_total_bytes_read,
+        );
+        if num_bytes_read < 0 {
+            libc::close(file);
+            return None;
+        }
+        if num_bytes_read == 0 {
+            break;
+        }
+        num_total_bytes_read += num_bytes_read as usize;
     }
 
     libc::close(file);

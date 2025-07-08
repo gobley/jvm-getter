@@ -3,7 +3,7 @@
 //! > ⚠️ This library depends on implementation details of Android, not its public APIs. Use at your
 //! > own risk.
 //!
-//! A tiny library for finding [`JNI_GetCreatedJavaVMs()`] on Android 24 to 30.
+//! A tiny `no_std` library for finding [`JNI_GetCreatedJavaVMs()`] on Android 24 to 30.
 //!
 //! [`JNI_GetCreatedJavaVMs()`] is a JNI function that returns the list of Java VM instances that
 //! have been created during runtime. Unfortunately, on Android API level 30 or lower,
@@ -25,11 +25,11 @@
 
 #![no_std]
 
-#[cfg(target_os = "android")]
+#[cfg(all(target_os = "android", feature = "art-parsing"))]
 mod android;
-#[cfg(target_family = "unix")]
+#[cfg(all(target_family = "unix", feature = "sym-search-unix"))]
 mod unix;
-#[cfg(target_os = "windows")]
+#[cfg(all(target_os = "windows", feature = "sym-search-windows"))]
 mod windows;
 
 use jni_sys::{jint, jsize, JavaVM};
@@ -61,24 +61,34 @@ pub type JNI_GetCreatedJavaVMs =
 pub unsafe fn find_jni_get_created_java_vms() -> Option<JNI_GetCreatedJavaVMs> {
     // For API level 31 or higher, or level 23 or lower, where JNI_GetCreatedJavaVMs is a public
     // API, we can just use `dlsym` to find the symbol.
-
-    #[cfg(target_family = "unix")]
-    let symbol = unix::find_jni_get_created_java_vms_from_current_process();
-    #[cfg(target_os = "windows")]
-    let symbol = windows::find_jni_get_created_java_vms_from_current_process();
-
-    if let Some(symbol) = symbol {
-        return Some(symbol);
+    #[cfg(all(target_family = "unix", feature = "sym-search-unix"))]
+    {
+        let symbol = unix::find_jni_get_created_java_vms_from_current_process();
+        if let Some(symbol) = symbol {
+            return Some(symbol);
+        }
     }
 
-    #[cfg(target_os = "android")]
+    #[cfg(all(target_os = "windows", feature = "sym-search-windows"))]
+    {
+        let symbol = windows::find_jni_get_created_java_vms_from_current_process();
+        if let Some(symbol) = symbol {
+            return Some(symbol);
+        }
+    }
+
+    #[cfg(all(target_os = "android", feature = "art-parsing"))]
     {
         use core::mem::MaybeUninit;
 
         let mut art_library_filename = MaybeUninit::uninit();
         let art_library_filename = android::get_art_library_filename(&mut art_library_filename);
-        android::find_jni_get_created_java_vms_from_library_filename(art_library_filename)
+        let symbol =
+            android::find_jni_get_created_java_vms_from_library_filename(art_library_filename);
+        if let Some(symbol) = symbol {
+            return Some(symbol);
+        }
     }
-    #[cfg(not(target_os = "android"))]
+
     None
 }

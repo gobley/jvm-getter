@@ -1,4 +1,5 @@
 import gobley.gradle.GobleyHost
+import gobley.gradle.cargo.dsl.android
 import gobley.gradle.cargo.dsl.jvm
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -13,6 +14,13 @@ plugins {
 cargo {
     builds.jvm {
         embedRustLibrary = (GobleyHost.current.rustTarget == rustTarget)
+        features.add("sym-search")
+    }
+    builds.android {
+        if (findProperty("jvm-getter.tests.android-sym-search")?.toString()?.toBoolean() == true) {
+            features.add("sym-search")
+        }
+        features.add("art-parsing")
     }
 }
 

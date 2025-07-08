@@ -3,7 +3,7 @@
 > ⚠️ This library depends on implementation details of Android, not its public APIs. Use at your own
 > risk.
 
-A tiny library for finding [`JNI_GetCreatedJavaVMs()`] on Android 24 to 30.
+A tiny `no_std` library for finding [`JNI_GetCreatedJavaVMs()`] on Android 24 to 30.
 
 [`JNI_GetCreatedJavaVMs()`] is a JNI function that returns the list of Java VM instances that have
 been created during runtime. Unfortunately, on Android API level 30 or lower,
@@ -22,7 +22,7 @@ to manually handle Java-specific logic for Android. To learn about the strategy 
 also available on Desktop platforms, including Windows, macOS, and Linux.
 
 [`JNI_GetCreatedJavaVMs()`]: https://docs.oracle.com/javase/8/docs/technotes/guides/jni/spec/invocation.html#JNI_GetCreatedJavaVMs
-[`find_jni_get_created_java_vms()`]: ./jvm-getter/src/lib.rs#L52
+[`find_jni_get_created_java_vms()`]: ./jvm-getter/src/lib.rs#L42-L60
 
 ## How to use
 
@@ -60,6 +60,29 @@ pub fn vm() -> &'static JavaVM {
         vm.expect("JNI_GetCreatedJavaVMs returned nullptr")
     })
 }
+```
+
+`jvm-getter` provides several Cargo features to control the behavior of
+`find_jni_get_created_java_vms`. Here's the list of the Cargo features:
+
+- `alloc`: Enables the use of `alloc::vec::Vec` (`std::vec::Vec`) for allocating a memory buffer for
+  `libart.so`.
+- `sym-search`: Enables finding `JNI_GetCreatedJavaVMs` using platform-specific symbol-searching APIs.
+  - `sym-search-unix`: Enables finding using `dlsym` on Unix systems.
+  - `sym-search-windows`: Enables finding using `GetProcAddress` on Windows.
+- `art-parsing`: Enables finding `JNI_GetCreatedJavaVMs` by directly parsing `libart.so`.
+
+All features are enabled by default. If you want to completely remove the dependency on the
+standard library, set `default-features` to `false` and enable `sym-search` and `art-parsing` only.
+
+If your app targets API level 31 (Android 12) or a higher version, you can also disable
+`art-parsing` as `JNI_GetCreatedJavaVMs` is a public API.
+
+```toml
+jvm-getter = { version = "0.1", default-features = false, features = [
+    "sym-search",
+    "art-parsing",
+] }
 ```
 
 ## Contribution
