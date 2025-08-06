@@ -96,12 +96,17 @@ jobs:
       - name: Check out the main branch
         uses: actions/checkout@v4
 
+      - name: Exclude jvm-getter-tests from the workspace
+        run: rm Cargo.toml
+
       - name: Build jvm-getter for ${{ matrix.name }} with the ${{ matrix.profile }} profile
-        run: cargo build -p jvm-getter --target ${{ matrix.target }} --profile ${{ matrix.profile }}
+        run: cargo build --target ${{ matrix.target }} --profile ${{ matrix.profile }}
+        working-directory: jvm-getter
         env:
           RUSTFLAGS: "-D warnings"
 
       - name: Run Cargo Clippy for ${{ matrix.name }} with the ${{ matrix.profile }} profile
-        run: cargo clippy -p jvm-getter --target ${{ matrix.target }} --profile ${{ matrix.profile }}
+        run: cargo clippy --target ${{ matrix.target }} --profile ${{ matrix.profile }}
+        working-directory: jvm-getter
         env:
           RUSTFLAGS: "-D warnings"
