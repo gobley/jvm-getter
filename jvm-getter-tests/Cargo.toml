@@ -5,8 +5,8 @@ homepage = "https://github.com/gobley/jvm-getter"
 repository = "https://github.com/gobley/jvm-getter"
 readme = "../README.md"
 version = "0.1.0"
-edition = "2021"
-rust-version = "1.73"
+edition = "2024"
+rust-version = "1.85"
 authors = ["Chanjung Kim <chanjungkim@paxbun.dev>"]
 publish = false
 

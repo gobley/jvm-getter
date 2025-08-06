@@ -3,9 +3,9 @@
 use std::ffi::c_void;
 use std::mem::MaybeUninit;
 
-use jni::objects::{JClass, JValue, JValueGen};
-use jni::sys::{JavaVM, JNI_OK};
 use jni::JNIEnv;
+use jni::objects::{JClass, JValue, JValueGen};
+use jni::sys::{JNI_OK, JavaVM};
 
 #[uniffi::export]
 pub fn find_jni_get_created_java_vms() -> u64 {
@@ -141,13 +141,13 @@ fn find_class_via_application_class_loader<'a>(
 }
 
 unsafe fn get_java_vm_impl() -> Option<*mut JavaVM> {
-    let get_java_vm = jvm_getter::find_jni_get_created_java_vms().unwrap();
+    let get_java_vm = unsafe { jvm_getter::find_jni_get_created_java_vms().unwrap() };
     let mut java_vm = MaybeUninit::uninit();
-    let status = get_java_vm(java_vm.as_mut_ptr(), 1, &mut 0);
+    let status = unsafe { get_java_vm(java_vm.as_mut_ptr(), 1, &mut 0) };
     if status != JNI_OK {
         return None;
     }
-    Some(java_vm.assume_init())
+    Some(unsafe { java_vm.assume_init() })
 }
 
 uniffi::setup_scaffolding!();
