@@ -18,11 +18,13 @@ jobs:
           CRATES_IO_API_TOKEN: ${{ secrets.CRATES_IO_API_TOKEN }}
 
       - name: Run checks before publishing
-        run: cargo publish --dry-run -p jvm-getter
+        run: cargo publish --dry-run
+        working-directory: jvm-getter
         env:
           RUSTFLAGS: "-D warnings"
 
       - name: Publish jvm-getter to crates.io
-        run: cargo publish -p jvm-getter
+        run: cargo publish
+        working-directory: jvm-getter
         env:
           RUSTFLAGS: "-D warnings"

@@ -1,3 +1,0 @@
-[workspace]
-members = ["jvm-getter", "jvm-getter-tests"]
-resolver = "2"
