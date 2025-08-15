@@ -1,6 +1,6 @@
 # `jvm-getter`
 
-[![License](https://img.shields.io/github/license/gobley/jvm-getter)](https://github.com/gobley/jvm-getter/blob/main/LICENSE)
+[![License](https://img.shields.io/github/license/gobley/jvm-getter)](https://github.com/gobley/jvm-getter/blob/main/LICENSE-APACHE)
 [![Crates.io](https://img.shields.io/crates/v/jvm-getter)](https://crates.io/crates/jvm-getter)
 [![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/gobley/jvm-getter/pr-test-desktop.yml?branch=main&label=tests)](https://github.com/gobley/jvm-getter/actions/workflows/pr-test-desktop.yml?query=branch%3Amain)
 
